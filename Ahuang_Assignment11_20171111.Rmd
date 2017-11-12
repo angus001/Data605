@@ -1,0 +1,43 @@
+---
+title: "Data605Week11"
+author: "Huang, Angus"
+date: "November 11, 2017"
+output: html_document
+---
+
+Check the first 6 rows of the cars dataset. 
+
+```{r}
+head(cars)
+#summary(cars$dist)
+```
+
+Summary of linear regression model. The y-intercept is -17.579 and the slope is 3.932.
+"The residuals are the differences between the actual measured values and the corresponding values on the fitted regression line. A good model's residual should be roughly balanced around from the mean of zero."
+
+The standard error should also be five to ten times smaller thand the corresponding coefficient for a good model.
+```{r}
+lmcar <-lm(cars$dist ~ cars$speed)
+lmcar
+summary(lmcar)
+```
+
+
+```{r}
+{plot(cars$speed,cars$dist,main = "1920 Cars speed and number of Feet Taken to Stop",
+      col = 'navyblue', pch = 16, xlab = "Speed (mph)", ylab = "Stopping Distance (feet)")
+abline(lmcar, col = "red")}
+```
+
+Plotting the residuals from above model to analyze 
+```{r}
+plot(fitted(lmcar),resid(lmcar),col = 'navyblue', pch = 16, main = "The residual values vs. input values: \n well fitted model will have uniformly distribution around zero")
+```
+Plotting Q-Q plot: quantile-versus-quantile.
+Q-Q plot is used for visually examining whether the residuals are normally distributed.
+Notes: points forming along the qqline indicates normally distributed residuals. 
+
+```{r}
+qqnorm(resid(lmcar))
+qqline(resid(lmcar), col = "red")
+```
