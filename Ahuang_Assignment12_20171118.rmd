@@ -1,0 +1,130 @@
+---
+title: "Data605_Assginment12"
+author: "Angus Huang"
+date: "November 17, 2017"
+output: html_document
+---
+
+---
+title: "Week12Discussion"
+author: "Huang, Angus"
+date: "November 14, 2017"
+output: html_document
+---
+
+1.Download the dataset from the source.
+```{r}
+lifexp <- read.table ("https://raw.githubusercontent.com/angus001/Data605/master/Assign12_rawdata.csv",header =T, sep =",")
+```
+
+2. Clean up the data
+2.a Put in data columns
+```{r}
+colnames(lifexp)
+```
+
+
+```{r}
+head(lifexp)
+```
+
+
+
+```{r}
+head(lifexp)
+```
+
+```{r}
+pairs(lifexp,gap=0.5, col = 'navyblue')
+```
+
+
+1. Perform simple linear regression
+The R-Squared at 0.2302 indicates the total expenditure alone explain about 23% of the variance in lifexpectancy across the countries.
+The P value is very small and less than 0.05, therefore the model is valid. F-statistic is used for additional check on the validity of R-Sqaured value. 
+R-Squared value explains the strenght of the relationship between the (input vs. output) variables.  F-statistic then check if the R-sqaured value is valid or not. Low F-value means close similarity between groups while the high F-value means the opposite.
+
+
+```{r}
+lifexplm <- lm(LifeExp ~ TotExp,  data = lifexp )
+
+summary(lifexplm)
+```
+```{r}
+
+colnames(lifexp)
+
+```
+
+```{r}
+{plot(lifexp$TotExp,lifexp$LifeExp,main = "Life Expectency vs. Total Medical Expenditure",
+      col = 'navyblue', pch = 16, xlab = "Total Expenditure (Adjusted Dollars)", ylab = "Life Expectency (Years)")
+abline(lifexplm, col = "red")}
+
+```
+
+Question 2. 
+Raise the life expectency to 4.6 power and TotExp to the power of 0.6 then perform another linear regression of the same two variables.
+
+Firstly, the regression line is a perfect fit for the scatterplot. The R-sqaured value now explains 71 percent of all the variance between different countries. F-statistic is becoming larger as we expect the difference between countries are significant and the p-value for F-statistic is also support the validity. 
+
+```{r}
+lifexp$LifeExp46 <- (lifexp$LifeExp)^4.6
+lifexp$TotExp06<-(lifexp$TotExp)^.06
+```
+
+```{r}
+lifexplm2 <-lm(LifeExp46 ~ TotExp06,  data = lifexp )
+summary(lifexplm2)
+```
+
+```{r}
+{plot(lifexp$TotExp06, lifexp$LifeExp46,main = "Version 2 Life Expectency vs. Total Medical Expenditure",
+      col = 'navyblue', pch = 16, xlab = "Total Expenditure (Power Raised to  0.06)", ylab = "Life Expectency (Power Raised to 4.6)")
+abline(lifexplm2, col = "red")
+}
+
+```
+
+3. Using the results from 3, forecast life expectancy when TotExp^.06 =1.5. Then forecast life expectancy when TotExp^.06=2.5.
+
+```{r}
+colnames(lifexp)
+```  
+
+4. Build the following multiple regression model and interpret the F Statistics, R^2, standard error, and p-values. How good is the model?
+   LifeExp = b0+b1 x PropMd + b2 x TotExp +b3 x PropMD x TotExp
+
+   With Multivariate regression, the 92% of the variance can be explained by the variables. Interestingly, the TotExp has large values and it was removed in subsequent backward elimination. The residuals also remain close to zero, suggesting valid model. 
+   
+   However, the residual Q-Q plot does not follow a straight line. Thus the model probably is overfitting the data somewhat.
+
+```{r}
+lifexplm3 <-lm(LifeExp ~ TotExp+GovtExp+InfantSurvival+Under5Survival+TBFree+PropMD+PropRN+PersExp,  data = lifexp )
+summary(lifexplm3)
+```
+
+
+Remove variables (TotExp & GovtExp) with large p value (p value > 0.005)
+```{r}
+lifexplm4 <- update(lifexplm3, .~. -TotExp, data = lifexp)
+lifexplm4 <- update(lifexplm4, .~. -GovtExp, data = lifexp)
+summary(lifexplm4)
+```
+
+
+Residual analysis shows almost straight line with distribution around zero. Due to this pattern, this model is not as robust. 
+```{r}
+plot(fitted(lifexplm4),resid(lifexplm4))
+```
+
+```{r}
+qqnorm(resid(pimalm), col = "blue")
+qqline(resid(pimalm), col = "red")
+
+```
+
+
+5. Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why or why not?
+
+
