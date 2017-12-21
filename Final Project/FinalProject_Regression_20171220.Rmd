@@ -1,0 +1,107 @@
+---
+title: "Regression"
+author: "Angus Huang"
+date: "December 20, 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r }
+library(MASS)
+library(ggplot2)
+```
+
+
+```{r}
+
+mydata <-read.table("https://github.com/angus001/Data605/raw/master/train.csv",header = T, sep= ",")
+testdata <- read.table("https://github.com/angus001/Data605/raw/master/test.csv",header = T, sep = ",")
+
+```
+
+
+```{r }
+X<-mydata$X1stFlrSF
+Y<-mydata$SalePrice
+df<-data.frame(X,Y)
+```
+
+```{r}
+ggplot(df, aes(x=X)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="skyblue")+
+  geom_density(alpha=0.5) +
+  xlab("1st Floor Square Feet") +
+  geom_vline(aes(xintercept=median(df$X)),
+             color="green", linetype="dashed", size=1)
+
+```
+
+
+
+```{r}
+ggplot(df, aes(x=Y)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="skyblue")+
+  geom_density(alpha=0.5) +
+  xlab("House Sale Prices") +
+  geom_vline(aes(xintercept=median(df$Y)),
+             color="green", linetype="dashed", size=1)
+
+```
+
+Perform boxcox analysis to find log-Likelihood. Look for Lambda value with max likelihood. THe max likelihood is at 0.06 power.
+```{r}
+bc = boxcox(Y~X, data = df)
+```
+```{r}
+lamda =bc$x
+likelihood = bc$y
+bc1=cbind(lamda,likelihood)
+head(bc1[order(-likelihood),])
+```
+
+```{r}
+df$Ypower = (df$Y)^3/50
+powerreg <- lm(Ypower~X, df)
+hist(powerreg$residuals)
+```
+```{r}
+qqnorm(powerreg$residuals)
+qqline(powerreg$residuals)
+```
+
+Perform a correlation test between variables. The correlation test shows a correlation of 0.605 without tranforming the variable. The correlation actually become less to 0.441 after transforming the variable.
+```{r}
+cor(df)
+
+```
+
+
+```{r}
+cor.test(df$X,df$Y, conf.level = 0.99)
+```
+
+Fitting the data point into different distribution to understand the underlying spread of the data.
+```{r}
+fit <- fitdistr(df$X, densfun = 'cauchy')
+fit
+```
+
+```{r}
+lamda2 <- fit$estimate
+lamda2
+```
+Take 1000 samples from the distribution, plot a histogram and compare with the non-transformed original values.
+```{r}
+estimate <- rexp(1000,lamda2)
+hist(estimate, breaks = 200)
+```
+```{r}
+hist(df$X, breaks = 200)
+```
+
+![Kaggle Result](https://github.com/angus001/Data605/blob/master/kagglefirsttry.PNG?raw=true)
+
+```{r}
+#![Kaggle Result](https://github.com/angus001/Data605/blob/master/kagglefirsttry.PNG?raw=true)
+```
